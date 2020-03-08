@@ -59,13 +59,13 @@ class _TodoListPageState extends State<TodoListPage> {
         itemCount: _taskItems.length,
         itemBuilder: (context, index) {
           final task = _taskItems[index];
-          return ListTile(
+          return ListTile( // todo 削除時、追加時はアニメーションを行うようにする。
             leading: Checkbox(
               value: false,
               onChanged: (isChecked) {
                 if (isChecked) {
                   setState(() {
-                    task.completeTodo();
+                    _taskItems.removeAt(index);
                   });
                 }
               },
