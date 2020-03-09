@@ -5,7 +5,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:todoapp/task/task.dart';
 import 'package:uuid/uuid.dart';
 
-// todo データベースへの接続処理を書いていく。
 class TaskDatabaseHelper {
   // データベース名
   static const String _databaseName = "TaskDatabase.db";
