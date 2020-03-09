@@ -10,9 +10,6 @@ class TodoListPage extends StatefulWidget {
 class _TodoListPageState extends State<TodoListPage> {
   TaskDatabaseHelper databaseHelper = TaskDatabaseHelper.instance;
 
-  // データベースから取得した値を保持しておく。
-  final List<Task> _taskItems = [];
-
   void _showModal() {
     String _inputText = '';
     showModalBottomSheet(
@@ -42,8 +39,46 @@ class _TodoListPageState extends State<TodoListPage> {
         });
   }
 
+  FutureBuilder _createFutureBuilder() {
+    return FutureBuilder<List<Task>>(
+      future: databaseHelper.queryAllTasks(),
+      builder: (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
+        if (!snapshot.hasData) {
+          // snapshot がデータを持っていない場合
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        } else if (snapshot.data == null) {
+          // snapshot がジェネリクスで指定したデータを持っていない場合
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        } else {
+          return ListView.builder(
+            itemCount: snapshot.data.length,
+            itemBuilder: (context, index) {
+              final task = snapshot.data[index];
+              return ListTile(
+                // todo 削除時、追加時はアニメーションを行うようにする。
+                leading: Checkbox(
+                  value: false,
+                  onChanged: (isChecked) {
+                    if (isChecked) {
+                      deleteTask(task.id);
+                    }
+                  },
+                ),
+                title: Text(task.text),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
   // BottomSheet上の登録ボタンをタップした場合にデータベースに登録する処理。
-  void register(String inputText) async {
+  void register(String inputText) {
     if (inputText.isEmpty) {
       // テキストが空っぽの場合は登録しない。
       return;
@@ -60,28 +95,9 @@ class _TodoListPageState extends State<TodoListPage> {
       _getTasks();
     });
   }
-  
-  void _getTasks() async {
-    int itemCount = _taskItems.length;
-    if (itemCount > 0) {
-      // リスト内に配列が1つでもある場合は一度全てを削除する
-      _taskItems.clear();
-    }
-    await databaseHelper.queryAllTasks().then((tasks) {
-      setState(() {
-        _taskItems.addAll(tasks);
-      });
-    });
-  }
 
-  @override
-  void initState() {
-    super.initState();
-    databaseHelper.queryAllTasks().then((tasks) {
-      setState(() {
-        _taskItems.addAll(tasks);
-      });
-    });
+  void _getTasks() {
+    setState(() {});
   }
 
   @override
@@ -94,23 +110,7 @@ class _TodoListPageState extends State<TodoListPage> {
         onPressed: () => _showModal(),
         child: Icon(Icons.add),
       ),
-      body: ListView.builder(
-        itemCount: _taskItems.length,
-        itemBuilder: (context, index) {
-          final task = _taskItems[index];
-          return ListTile( // todo 削除時、追加時はアニメーションを行うようにする。
-            leading: Checkbox(
-              value: false,
-              onChanged: (isChecked) {
-                if (isChecked) {
-                  deleteTask(_taskItems[index].id);
-                }
-              },
-            ),
-            title: Text(task.text),
-          );
-        },
-      ),
+      body: _createFutureBuilder(),
     );
   }
 }
