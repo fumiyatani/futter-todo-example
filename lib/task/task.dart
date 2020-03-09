@@ -2,8 +2,8 @@
 import 'package:uuid/uuid.dart';
 
 class Task {
-  String _id = Uuid().v4();
-  String _text;
+  final String _id = Uuid().v4();
+  final String _text;
   bool _isFinished;
 
   get id => _id;
