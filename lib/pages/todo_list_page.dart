@@ -59,7 +59,6 @@ class _TodoListPageState extends State<TodoListPage> {
             itemBuilder: (context, index) {
               final task = snapshot.data[index];
               return ListTile(
-                // todo 削除時、追加時はアニメーションを行うようにする。
                 leading: Checkbox(
                   value: false,
                   onChanged: (isChecked) {
