@@ -1,18 +1,16 @@
 
-import 'package:uuid/uuid.dart';
-
 class Task {
-  final String _id = Uuid().v4();
-  final String _text;
-  bool _isFinished;
+  final String id;
+  final String text;
+  bool isFinished;
 
-  get id => _id;
-  get text => _text;
-  get isFinished => _isFinished;
+  Task({this.id, this.text, this.isFinished});
 
-  Task(this._text, this._isFinished);
-
-  void completeTodo() {
-    _isFinished = true;
+  Map<String, dynamic> toMap() {
+    return {
+      'id' : this.id,
+      'text' : this.text,
+      'isFinished' : this.isFinished ? 1 : 0
+    };
   }
 }
