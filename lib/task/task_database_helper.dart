@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todoapp/task/task.dart';

@@ -58,16 +58,23 @@ class _TodoListPageState extends State<TodoListPage> {
             itemCount: snapshot.data.length,
             itemBuilder: (context, index) {
               final task = snapshot.data[index];
-              return ListTile(
-                leading: Checkbox(
-                  value: false,
-                  onChanged: (isChecked) {
-                    if (isChecked) {
-                      deleteTask(task.id);
-                    }
-                  },
+              return Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Colors.black12),
+                  ),
                 ),
-                title: Text(task.text),
+                child: ListTile(
+                  leading: Checkbox(
+                    value: false,
+                    onChanged: (isChecked) {
+                      if (isChecked) {
+                        deleteTask(task.id);
+                      }
+                    },
+                  ),
+                  title: Text(task.text),
+                ),
               );
             },
           );
