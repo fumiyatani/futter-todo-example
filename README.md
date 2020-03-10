@@ -1,16 +1,25 @@
 # todoapp
 
-A new Flutter application.
+Flutterの勉強のためにTODOアプリを作成しました。
 
-## Getting Started
+##作成した機能
 
-This project is a starting point for a Flutter application.
+- TODOの追加
+- TODOの削除
 
-A few resources to get you started if this is your first Flutter project:
+## 使用しているpackage
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+- [uuid](https://pub.dev/packages/uuid#-readme-tab-)
+一意のIDを作成するために使用。
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- [spflite](https://pub.dev/packages/sqflite#-readme-tab-)
+データを永続化するために使用。
+
+- [path](https://pub.dev/packages/path#-readme-tab-)
+ローカルDBのパス操作を行うために使用。
+
+##追加する機能
+
+- TODOタスクを更新できるようにする
+- 終わっていないタスク一覧を表示できるようにする
+- 終わっているタスク一覧を表示できるようにする
