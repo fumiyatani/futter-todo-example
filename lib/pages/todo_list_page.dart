@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:todoapp/task/task.dart';
-import 'package:todoapp/task/task_database_helper.dart';
+import 'package:todoapp/task_data/task.dart';
+import 'package:todoapp/task_data/task_database_helper.dart';
 
 class TodoListPage extends StatefulWidget {
   @override

@@ -1,6 +1,6 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:todoapp/task/task.dart';
+import 'package:todoapp/task_data/task.dart';
 import 'package:uuid/uuid.dart';
 
 class TaskDatabaseHelper {
