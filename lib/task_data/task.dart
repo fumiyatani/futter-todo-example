@@ -5,7 +5,7 @@ class Task {
 
   Task({this.id, this.text, this.isFinished});
 
-  Map<String, dynamic> toMap() {
+  Map<String, Object> toMap() {
     return {
       'id' : this.id,
       'text' : this.text,

@@ -12,14 +12,14 @@ class _TodoListPageState extends State<TodoListPage> {
 
   void _showModal() {
     String _inputText = '';
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
         context: context,
-        builder: (BuildContext context) {
+        builder: (context) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: TextField(
                   onChanged: (text) {
                     _inputText = text;
@@ -28,7 +28,7 @@ class _TodoListPageState extends State<TodoListPage> {
               ),
               Center(
                 child: RaisedButton(
-                  child: Text('登録'),
+                  child: const Text('登録'),
                   onPressed: () {
                     register(_inputText);
                   },
@@ -42,15 +42,15 @@ class _TodoListPageState extends State<TodoListPage> {
   FutureBuilder _createFutureBuilder() {
     return FutureBuilder<List<Task>>(
       future: databaseHelper.queryAllTasks(),
-      builder: (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
+      builder: (context, snapshot) {
         if (!snapshot.hasData) {
           // snapshot がデータを持っていない場合
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         } else if (snapshot.data == null) {
           // snapshot がジェネリクスで指定したデータを持っていない場合
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         } else {
@@ -89,7 +89,7 @@ class _TodoListPageState extends State<TodoListPage> {
       // テキストが空っぽの場合は登録しない。
       return;
     }
-    databaseHelper.registerTask(inputText).then((int) {
+    databaseHelper.registerTask(inputText).then((i) {
       Navigator.pop(context, null);
       _getTasks();
     });
@@ -97,7 +97,6 @@ class _TodoListPageState extends State<TodoListPage> {
 
   void deleteTask(String id) {
     databaseHelper.deleteSelectedTask(id).then((i) {
-      // 削除後にタスク一覧を取得する。
       _getTasks();
     });
   }
@@ -110,7 +109,7 @@ class _TodoListPageState extends State<TodoListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('TODO アプリ'),
+        title: const Text('TODO アプリ'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showModal(),

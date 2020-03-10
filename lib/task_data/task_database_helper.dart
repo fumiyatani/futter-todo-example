@@ -34,7 +34,7 @@ class TaskDatabaseHelper {
   }
 
   // データベースの初期化を行う。
-  _initDatabase() async {
+  Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), _databaseName);
     return openDatabase(
       path,
@@ -77,21 +77,25 @@ class TaskDatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query(_table);
 
     return List.generate(maps.length, (index) {
+      String id = maps[index][_columnId].toString();
+      String text = maps[index][_columnText].toString();
+      bool isFinished = maps[index][_columnFinishedFlag] == 1;
+
       return Task(
-        id: maps[index][_columnId],
-        text: maps[index][_columnText],
-        isFinished: maps[index][_columnFinishedFlag] == 1, // todo bool → int / int →bool を調べる
+        id: id,
+        text: text,
+        isFinished: isFinished,
       );
     });
   }
 
   // 指定したidのTaskを削除する
-  Future deleteSelectedTask(String id) async {
+  Future<int> deleteSelectedTask(String id) async {
     Database db = await instance.database;
-    await db.delete(
+    return await db.delete(
       _table,
       where: "$_columnId = ?",
-      whereArgs: [id],
+      whereArgs: <String>[id],
     );
   }
 }
