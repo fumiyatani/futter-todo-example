@@ -28,6 +28,12 @@ class _TodoListPageState extends State<TodoListPage> {
     });
   }
 
+  void updateFinishFlag(Task task, bool isFinished) {
+    _database.updateFinishFlag(task, isFinished).then((int index) {
+      setState(() {});
+    });
+  }
+
   void _showModal() {
     String inputText = '';
     showModalBottomSheet<void>(
@@ -80,12 +86,11 @@ class _TodoListPageState extends State<TodoListPage> {
             ),
             Center(
               child: RaisedButton(
-                child: const Text('更新'),
-                onPressed: () {
-                  updateTask(task, updatedText);
-                  Navigator.of(context).pop(null);
-                }
-              ),
+                  child: const Text('更新'),
+                  onPressed: () {
+                    updateTask(task, updatedText);
+                    Navigator.of(context).pop(null);
+                  }),
             )
           ],
         );
@@ -109,8 +114,8 @@ class _TodoListPageState extends State<TodoListPage> {
           onPressedRow: (Task task) {
             _showUpdateModal(task);
           },
-          onChecked: (String id) {
-            deleteTask(id);
+          onChecked: (Task task, bool isFinished) {
+            updateFinishFlag(task, isFinished);
           },
         ),
       ),
@@ -119,14 +124,11 @@ class _TodoListPageState extends State<TodoListPage> {
 }
 
 class _FutureBuilderTodoListView extends StatefulWidget {
-  _FutureBuilderTodoListView({
-    Key key,
-    this.onPressedRow,
-    this.onChecked
-  }) : super(key: key);
+  _FutureBuilderTodoListView({Key key, this.onPressedRow, this.onChecked})
+      : super(key: key);
 
   final Function(Task) onPressedRow;
-  final Function(String) onChecked;
+  final Function(Task, bool) onChecked;
 
   @override
   _FutureBuilderTodoListViewState createState() =>
@@ -136,6 +138,9 @@ class _FutureBuilderTodoListView extends StatefulWidget {
 // Databaseから取得したデータを表示するためのFutureBuilderで包まれたListView
 class _FutureBuilderTodoListViewState
     extends State<_FutureBuilderTodoListView> {
+
+  // タスクを完了したかどうかのフラグ。
+  bool isFinished = false;
 
   FutureBuilder<List<Task>> _createFutureBuilder(BuildContext context) {
     Future<List<Task>> tasks =
@@ -165,6 +170,7 @@ class _FutureBuilderTodoListViewState
       itemCount: data.length,
       itemBuilder: (context, index) {
         final task = data[index];
+        isFinished = task.isFinished;
         return Container(
           decoration: BoxDecoration(
             border: Border(
@@ -176,18 +182,30 @@ class _FutureBuilderTodoListViewState
               widget.onPressedRow(task);
             },
             leading: Checkbox(
-              value: false,
+              value: isFinished,
               onChanged: (isChecked) {
-                if (isChecked) {
-                  widget.onChecked(task.id);
-                }
+                widget.onChecked(task, isChecked);
+                setState(() {
+                  isFinished = isChecked;
+                });
               },
             ),
-            title: Text(task.text),
+            title: _buildText(task.text, isFinished)
           ),
         );
       },
     );
+  }
+
+  Text _buildText(String text, bool isFinished) {
+    return isFinished
+        ? Text(
+            text,
+            style: TextStyle(
+              decoration: TextDecoration.lineThrough,
+            ),
+          )
+        : Text(text);
   }
 
   @override
@@ -208,7 +226,7 @@ class _TodoListInheritedWidget extends InheritedWidget {
 
   static _TodoListInheritedWidget of(
     BuildContext context, {
-    @required bool listen /* true → 監視対象の場合*/,
+    @required bool listen /* 監視対象の場合 → true */,
   }) {
     return listen
         ? context.dependOnInheritedWidgetOfExactType<_TodoListInheritedWidget>()
