@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/pages/todo_list_page_presenter.dart';
 import 'package:todoapp/task_data/task.dart';
 import 'package:todoapp/task_data/task_database_helper.dart';
 
@@ -11,34 +12,24 @@ class TodoListPage extends StatefulWidget {
   _TodoListPageState createState() => _TodoListPageState();
 }
 
-class _TodoListPageState extends State<TodoListPage> {
-  TaskDatabaseHelper _database = TaskDatabaseHelper.instance;
+class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
+  TodoListPresenter _todoListPresenter;
 
   // どのリストを表示するかを決める。初回は全てから。
   ListType listType = ListType.all;
 
-  void registerTask(String taskText) {
-    _database.registerTask(taskText).then((int index) {
-      setState(() {});
-    });
+  @override
+  void initState() {
+    super.initState();
+    _todoListPresenter = TodoListPresenter(
+      taskDatabaseHelper: TaskDatabaseHelper.instance,
+      onComplete: this,
+    );
   }
 
-  void deleteTask(String taskId) {
-    _database.deleteSelectedTask(taskId).then((int index) {
-      setState(() {});
-    });
-  }
-
-  void updateTask(Task task, String updatedText) {
-    _database.updateTaskText(task, updatedText).then((int index) {
-      setState(() {});
-    });
-  }
-
-  void updateFinishFlag(Task task, bool isFinished) {
-    _database.updateFinishFlag(task, isFinished).then((int index) {
-      setState(() {});
-    });
+  @override
+  void onComplete() {
+    setState(() {});
   }
 
   void _showModal() {
@@ -61,7 +52,7 @@ class _TodoListPageState extends State<TodoListPage> {
               child: RaisedButton(
                 child: const Text('登録'),
                 onPressed: () {
-                  registerTask(inputText);
+                  _todoListPresenter.registerTask(inputText);
                   Navigator.of(context).pop(null);
                 },
               ),
@@ -95,7 +86,7 @@ class _TodoListPageState extends State<TodoListPage> {
               child: RaisedButton(
                   child: const Text('更新'),
                   onPressed: () {
-                    updateTask(task, updatedText);
+                    _todoListPresenter.updateTask(task, updatedText);
                     Navigator.of(context).pop(null);
                   }),
             )
@@ -149,7 +140,7 @@ class _TodoListPageState extends State<TodoListPage> {
   @override
   Widget build(BuildContext context) {
     return _TodoListInheritedWidget(
-      tasks: _database.queryTasks(listType),
+      tasks: _todoListPresenter.queryTasks(listType),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('TODO アプリ'),
@@ -166,10 +157,10 @@ class _TodoListPageState extends State<TodoListPage> {
             _showUpdateModal(task);
           },
           onChecked: (Task task, bool isFinished) {
-            updateFinishFlag(task, isFinished);
+            _todoListPresenter.updateFinishFlag(task, isFinished);
           },
           onPressedDelete: (String id) {
-            deleteTask(id);
+            _todoListPresenter.deleteTask(id);
           },
         ),
       ),
