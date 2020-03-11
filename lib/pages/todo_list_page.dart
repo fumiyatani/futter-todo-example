@@ -168,6 +168,9 @@ class _TodoListPageState extends State<TodoListPage> {
           onChecked: (Task task, bool isFinished) {
             updateFinishFlag(task, isFinished);
           },
+          onPressedDelete: (String id) {
+            deleteTask(id);
+          },
         ),
       ),
     );
@@ -175,11 +178,16 @@ class _TodoListPageState extends State<TodoListPage> {
 }
 
 class _FutureBuilderTodoListView extends StatefulWidget {
-  _FutureBuilderTodoListView({Key key, this.onPressedRow, this.onChecked})
-      : super(key: key);
+  _FutureBuilderTodoListView({
+    Key key,
+    this.onPressedRow,
+    this.onChecked,
+    this.onPressedDelete,
+  }) : super(key: key);
 
   final Function(Task) onPressedRow;
   final Function(Task, bool) onChecked;
+  final Function(String) onPressedDelete;
 
   @override
   _FutureBuilderTodoListViewState createState() =>
@@ -238,6 +246,15 @@ class _FutureBuilderTodoListViewState
                   setState(() {
                     isFinished = isChecked;
                   });
+                },
+              ),
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.delete,
+                  color: Colors.grey.shade500,
+                ),
+                onPressed: () {
+                  widget.onPressedDelete(task.id);
                 },
               ),
               title: _buildText(task.text, isFinished)),
