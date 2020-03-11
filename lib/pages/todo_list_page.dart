@@ -59,85 +59,7 @@ class _TodoListPageState extends State<TodoListPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _TodoListInheritedWidget(
-      tasks: _database.queryAllTasks(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('TODO アプリ'),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showModal(),
-          child: Icon(Icons.add),
-        ),
-        body: _FutureBuilderTodoListView(),
-      ),
-    );
-  }
-}
-
-class _RegisterFloatingActionButton extends StatefulWidget {
-  @override
-  _RegisterFloatingActionButtonState createState() =>
-      _RegisterFloatingActionButtonState();
-}
-
-class _RegisterFloatingActionButtonState
-    extends State<_RegisterFloatingActionButton> {
-  _TodoListPageState inheritedWidget;
-
-  // 登録する際に表示するモーダル
-  void _showModal() {
-    String inputText = '';
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: TextField(
-                onChanged: (String text) {
-                  inputText = text;
-                },
-              ),
-            ),
-            Center(
-              child: RaisedButton(
-                child: const Text('登録'),
-                onPressed: () => inheritedWidget.registerTask(inputText),
-              ),
-            )
-          ],
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    inheritedWidget = _TodoListInheritedWidget.of2(context, rebuild: false);
-    print('$inheritedWidget');
-    return FloatingActionButton(
-      onPressed: () => _showModal(),
-      child: Icon(Icons.add),
-    );
-  }
-}
-
-class _FutureBuilderTodoListView extends StatefulWidget {
-  @override
-  _FutureBuilderTodoListViewState createState() =>
-      _FutureBuilderTodoListViewState();
-}
-
-// Databaseから取得したデータを表示するためのFutureBuilderで包まれたListView
-class _FutureBuilderTodoListViewState
-    extends State<_FutureBuilderTodoListView> {
-  // 更新する際に表示するモーダル
-  void _showUpdateModal(_TodoListPageState _todoListPageState, Task task) {
+  void _showUpdateModal(Task task) {
     String updatedText = task.text;
     showModalBottomSheet<void>(
       context: context,
@@ -159,8 +81,10 @@ class _FutureBuilderTodoListViewState
             Center(
               child: RaisedButton(
                 child: const Text('更新'),
-                onPressed: () =>
-                    _todoListPageState.updateTask(task, updatedText),
+                onPressed: () {
+                  updateTask(task, updatedText);
+                  Navigator.of(context).pop(null);
+                }
               ),
             )
           ],
@@ -171,8 +95,47 @@ class _FutureBuilderTodoListViewState
 
   @override
   Widget build(BuildContext context) {
-    return _createFutureBuilder(context);
+    return _TodoListInheritedWidget(
+      tasks: _database.queryAllTasks(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('TODO アプリ'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showModal(),
+          child: Icon(Icons.add),
+        ),
+        body: _FutureBuilderTodoListView(
+          onPressedRow: (Task task) {
+            _showUpdateModal(task);
+          },
+          onChecked: (String id) {
+            deleteTask(id);
+          },
+        ),
+      ),
+    );
   }
+}
+
+class _FutureBuilderTodoListView extends StatefulWidget {
+  _FutureBuilderTodoListView({
+    Key key,
+    this.onPressedRow,
+    this.onChecked
+  }) : super(key: key);
+
+  final Function(Task) onPressedRow;
+  final Function(String) onChecked;
+
+  @override
+  _FutureBuilderTodoListViewState createState() =>
+      _FutureBuilderTodoListViewState();
+}
+
+// Databaseから取得したデータを表示するためのFutureBuilderで包まれたListView
+class _FutureBuilderTodoListViewState
+    extends State<_FutureBuilderTodoListView> {
 
   FutureBuilder<List<Task>> _createFutureBuilder(BuildContext context) {
     Future<List<Task>> tasks =
@@ -191,37 +154,45 @@ class _FutureBuilderTodoListViewState
             child: CircularProgressIndicator(),
           );
         } else {
-          return ListView.builder(
-            itemCount: snapshot.data.length,
-            itemBuilder: (context, index) {
-              final task = snapshot.data[index];
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.black12),
-                  ),
-                ),
-                child: ListTile(
-                  onTap: () => _showUpdateModal(
-                      _TodoListInheritedWidget.of2(context, rebuild: false),
-                      task),
-                  leading: Checkbox(
-                    value: false,
-                    onChanged: (isChecked) {
-                      if (isChecked) {
-                        _TodoListInheritedWidget.of2(context, rebuild: false)
-                            .deleteTask(task.id);
-                      }
-                    },
-                  ),
-                  title: Text(task.text),
-                ),
-              );
-            },
-          );
+          return _buildListView(snapshot.data);
         }
       },
     );
+  }
+
+  ListView _buildListView(List<Task> data) {
+    return ListView.builder(
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        final task = data[index];
+        return Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.black12),
+            ),
+          ),
+          child: ListTile(
+            onTap: () {
+              widget.onPressedRow(task);
+            },
+            leading: Checkbox(
+              value: false,
+              onChanged: (isChecked) {
+                if (isChecked) {
+                  widget.onChecked(task.id);
+                }
+              },
+            ),
+            title: Text(task.text),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _createFutureBuilder(context);
   }
 }
 
@@ -244,14 +215,6 @@ class _TodoListInheritedWidget extends InheritedWidget {
         : context
             .getElementForInheritedWidgetOfExactType<_TodoListInheritedWidget>()
             .widget as _TodoListInheritedWidget;
-  }
-
-  static _TodoListPageState of2(BuildContext context, {bool rebuild = true}) {
-    if (rebuild) {
-      return (context.dependOnInheritedWidgetOfExactType(
-          aspect: _TodoListPageState) as _TodoListPageState);
-    }
-    return (context.findAncestorWidgetOfExactType() as _TodoListPageState);
   }
 
   @override
