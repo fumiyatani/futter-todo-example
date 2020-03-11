@@ -8,72 +8,177 @@ class TodoListPage extends StatefulWidget {
 }
 
 class _TodoListPageState extends State<TodoListPage> {
-  TaskDatabaseHelper databaseHelper = TaskDatabaseHelper.instance;
+  TaskDatabaseHelper _database = TaskDatabaseHelper.instance;
+
+  void registerTask(String taskText) {
+    _database.registerTask(taskText).then((int index) {
+      setState(() {});
+    });
+  }
+
+  void deleteTask(String taskId) {
+    _database.deleteSelectedTask(taskId).then((int index) {
+      setState(() {});
+    });
+  }
+
+  void updateTask(Task task, String updatedText) {
+    _database.updateTaskText(task, updatedText).then((int index) {
+      setState(() {});
+    });
+  }
+
+  void _showModal() {
+    String inputText = '';
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: TextField(
+                onChanged: (String text) {
+                  inputText = text;
+                },
+              ),
+            ),
+            Center(
+              child: RaisedButton(
+                child: const Text('登録'),
+                onPressed: () {
+                  registerTask(inputText);
+                  Navigator.of(context).pop(null);
+                },
+              ),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _TodoListInheritedWidget(
+      tasks: _database.queryAllTasks(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('TODO アプリ'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showModal(),
+          child: Icon(Icons.add),
+        ),
+        body: _FutureBuilderTodoListView(),
+      ),
+    );
+  }
+}
+
+class _RegisterFloatingActionButton extends StatefulWidget {
+  @override
+  _RegisterFloatingActionButtonState createState() =>
+      _RegisterFloatingActionButtonState();
+}
+
+class _RegisterFloatingActionButtonState
+    extends State<_RegisterFloatingActionButton> {
+  _TodoListPageState inheritedWidget;
 
   // 登録する際に表示するモーダル
   void _showModal() {
-    String _inputText = '';
+    String inputText = '';
     showModalBottomSheet<void>(
-        context: context,
-        builder: (context) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: TextField(
-                  onChanged: (String text) {
-                    _inputText = text;
-                  },
-                ),
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: TextField(
+                onChanged: (String text) {
+                  inputText = text;
+                },
               ),
-              Center(
-                child: RaisedButton(
-                  child: const Text('登録'),
-                  onPressed: () => register(_inputText),
-                ),
-              )
-            ],
-          );
-        });
+            ),
+            Center(
+              child: RaisedButton(
+                child: const Text('登録'),
+                onPressed: () => inheritedWidget.registerTask(inputText),
+              ),
+            )
+          ],
+        );
+      },
+    );
   }
 
+  @override
+  Widget build(BuildContext context) {
+    inheritedWidget = _TodoListInheritedWidget.of2(context, rebuild: false);
+    print('$inheritedWidget');
+    return FloatingActionButton(
+      onPressed: () => _showModal(),
+      child: Icon(Icons.add),
+    );
+  }
+}
+
+class _FutureBuilderTodoListView extends StatefulWidget {
+  @override
+  _FutureBuilderTodoListViewState createState() =>
+      _FutureBuilderTodoListViewState();
+}
+
+// Databaseから取得したデータを表示するためのFutureBuilderで包まれたListView
+class _FutureBuilderTodoListViewState
+    extends State<_FutureBuilderTodoListView> {
   // 更新する際に表示するモーダル
-  void _showUpdateModal({@required Task task}) {
+  void _showUpdateModal(_TodoListPageState _todoListPageState, Task task) {
     String updatedText = task.text;
     showModalBottomSheet<void>(
-        context: context,
-        builder: (context) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: TextField(
-                  controller: TextEditingController(
-                    text: task.text, // Textの初期値を設定
-                  ),
-                  onChanged: (text) {
-                    updatedText = text;
-                  },
+      context: context,
+      builder: (context) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: TextField(
+                controller: TextEditingController(
+                  text: task.text, // Textの初期値を設定
                 ),
+                onChanged: (text) {
+                  updatedText = text;
+                },
               ),
-              Center(
-                child: RaisedButton(
-                  child: const Text('更新'),
-                  onPressed: () {
-                    updateTask(task, updatedText);
-                  },
-                ),
-              )
-            ],
-          );
-        });
+            ),
+            Center(
+              child: RaisedButton(
+                child: const Text('更新'),
+                onPressed: () =>
+                    _todoListPageState.updateTask(task, updatedText),
+              ),
+            )
+          ],
+        );
+      },
+    );
   }
 
-  FutureBuilder<List<Task>> _createFutureBuilder() {
+  @override
+  Widget build(BuildContext context) {
+    return _createFutureBuilder(context);
+  }
+
+  FutureBuilder<List<Task>> _createFutureBuilder(BuildContext context) {
+    Future<List<Task>> tasks =
+        _TodoListInheritedWidget.of(context, listen: true).tasks;
     return FutureBuilder<List<Task>>(
-      future: databaseHelper.queryAllTasks(),
+      future: tasks,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           // snapshot がデータを持っていない場合
@@ -97,12 +202,15 @@ class _TodoListPageState extends State<TodoListPage> {
                   ),
                 ),
                 child: ListTile(
-                  onTap: () => _showUpdateModal(task: task),
+                  onTap: () => _showUpdateModal(
+                      _TodoListInheritedWidget.of2(context, rebuild: false),
+                      task),
                   leading: Checkbox(
                     value: false,
                     onChanged: (isChecked) {
                       if (isChecked) {
-                        deleteTask(task.id);
+                        _TodoListInheritedWidget.of2(context, rebuild: false)
+                            .deleteTask(task.id);
                       }
                     },
                   ),
@@ -115,52 +223,37 @@ class _TodoListPageState extends State<TodoListPage> {
       },
     );
   }
+}
 
-  // BottomSheet上の登録ボタンをタップした場合にデータベースに登録する処理。
-  void register(String inputText) {
-    if (inputText.isEmpty) {
-      // テキストが空っぽの場合は登録しない。
-      return;
+class _TodoListInheritedWidget extends InheritedWidget {
+  // リストに表示するためのタスク一覧
+  final Future<List<Task>> tasks;
+
+  _TodoListInheritedWidget({
+    Key key,
+    @required Widget child,
+    this.tasks,
+  }) : super(key: key, child: child);
+
+  static _TodoListInheritedWidget of(
+    BuildContext context, {
+    @required bool listen /* true → 監視対象の場合*/,
+  }) {
+    return listen
+        ? context.dependOnInheritedWidgetOfExactType<_TodoListInheritedWidget>()
+        : context
+            .getElementForInheritedWidgetOfExactType<_TodoListInheritedWidget>()
+            .widget as _TodoListInheritedWidget;
+  }
+
+  static _TodoListPageState of2(BuildContext context, {bool rebuild = true}) {
+    if (rebuild) {
+      return (context.dependOnInheritedWidgetOfExactType(
+          aspect: _TodoListPageState) as _TodoListPageState);
     }
-    databaseHelper.registerTask(inputText).then((i) {
-      Navigator.pop(context, null);
-      _getTasks();
-    });
-  }
-
-  void deleteTask(String id) {
-    databaseHelper.deleteSelectedTask(id).then((i) {
-      _getTasks();
-    });
-  }
-
-  void updateTask(Task task, String updatedText) {
-    // ここにDB処理を書く
-    if (updatedText == task.text || updatedText.isEmpty) {
-      // もし一致していた場合は何もしない。
-    } else {
-      databaseHelper.updateTaskText(task, updatedText).then((i) {
-        Navigator.pop(context, null);
-        _getTasks();
-      });
-    }
-  }
-
-  void _getTasks() {
-    setState(() {});
+    return (context.findAncestorWidgetOfExactType() as _TodoListPageState);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('TODO アプリ'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showModal(),
-        child: Icon(Icons.add),
-      ),
-      body: _createFutureBuilder(),
-    );
-  }
+  bool updateShouldNotify(InheritedWidget oldWidget) => false;
 }
