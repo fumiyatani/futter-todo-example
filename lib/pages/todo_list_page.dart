@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:todoapp/task_data/task.dart';
 import 'package:todoapp/task_data/task_database_helper.dart';
 
+const String all = '全て';
+const String complete = '完了';
+const String incomplete = '未完';
+
 class TodoListPage extends StatefulWidget {
   @override
   _TodoListPageState createState() => _TodoListPageState();
@@ -9,6 +13,9 @@ class TodoListPage extends StatefulWidget {
 
 class _TodoListPageState extends State<TodoListPage> {
   TaskDatabaseHelper _database = TaskDatabaseHelper.instance;
+
+  // どのリストを表示するかを決める。初回は全てから。
+  ListType listType = ListType.all;
 
   void registerTask(String taskText) {
     _database.registerTask(taskText).then((int index) {
@@ -98,13 +105,57 @@ class _TodoListPageState extends State<TodoListPage> {
     );
   }
 
+  PopupMenuButton _buildMenuButton() {
+    return PopupMenuButton<String>(
+      // タップされたものをものを調べて、rebuildする。
+      onSelected: (value) {
+        switch (value) {
+          case all:
+            setState(() {
+              listType = ListType.all;
+            });
+            break;
+          case complete:
+            listType = ListType.complete;
+            break;
+          case incomplete:
+            listType = ListType.incomplete;
+        }
+        setState(() {});
+      },
+      icon: Icon(Icons.sort),
+      itemBuilder: (BuildContext context) {
+        return List.generate(3, (int index) {
+          String title;
+          switch (index) {
+            case 0:
+              title = all;
+              break;
+            case 1:
+              title = complete;
+              break;
+            case 2:
+              title = incomplete;
+          }
+          return PopupMenuItem(
+            child: Text(title),
+            value: title,
+          );
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return _TodoListInheritedWidget(
-      tasks: _database.queryAllTasks(),
+      tasks: _database.queryTasks(listType),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('TODO アプリ'),
+          actions: <Widget>[
+            _buildMenuButton(),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _showModal(),
@@ -138,7 +189,6 @@ class _FutureBuilderTodoListView extends StatefulWidget {
 // Databaseから取得したデータを表示するためのFutureBuilderで包まれたListView
 class _FutureBuilderTodoListViewState
     extends State<_FutureBuilderTodoListView> {
-
   // タスクを完了したかどうかのフラグ。
   bool isFinished = false;
 
@@ -178,20 +228,19 @@ class _FutureBuilderTodoListViewState
             ),
           ),
           child: ListTile(
-            onTap: () {
-              widget.onPressedRow(task);
-            },
-            leading: Checkbox(
-              value: isFinished,
-              onChanged: (isChecked) {
-                widget.onChecked(task, isChecked);
-                setState(() {
-                  isFinished = isChecked;
-                });
+              onTap: () {
+                widget.onPressedRow(task);
               },
-            ),
-            title: _buildText(task.text, isFinished)
-          ),
+              leading: Checkbox(
+                value: isFinished,
+                onChanged: (isChecked) {
+                  widget.onChecked(task, isChecked);
+                  setState(() {
+                    isFinished = isChecked;
+                  });
+                },
+              ),
+              title: _buildText(task.text, isFinished)),
         );
       },
     );

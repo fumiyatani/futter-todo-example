@@ -3,6 +3,14 @@ import 'package:sqflite/sqflite.dart';
 import 'package:todoapp/task_data/task.dart';
 import 'package:uuid/uuid.dart';
 
+// 画面に表示するListType
+// query のところで使用する。
+enum ListType {
+  all,
+  complete,
+  incomplete
+}
+
 class TaskDatabaseHelper {
   // データベース名
   static const String _databaseName = "TaskDatabase.db";
@@ -71,16 +79,26 @@ class TaskDatabaseHelper {
   }
 
   // データベースに保存されているタスクを全件取得する
-  Future<List<Task>> queryAllTasks() async {
+  Future<List<Task>> queryTasks(ListType listType) async {
     // テーブルからTaskを全件取得する。
     Database db = await instance.database;
-    final List<Map<String, dynamic>> maps = await db.query(_table);
+    List<Map<String, Object>> maps;
+    switch (listType) {
+      case ListType.all:
+        maps = await db.query(_table);
+        break;
+      case ListType.complete:
+        maps = await db.query(_table, where: "$_columnFinishedFlag = ?", whereArgs: <int>[1]);
+        break;
+      case ListType.incomplete:
+        maps = await db.query(_table, where: "$_columnFinishedFlag = ?", whereArgs: <int>[0]);
+        break;
+    }
 
     return List.generate(maps.length, (int index) {
       String id = maps[index][_columnId].toString();
       String text = maps[index][_columnText].toString();
       bool isFinished = maps[index][_columnFinishedFlag] == 1;
-
       return Task(
         id: id,
         text: text,
