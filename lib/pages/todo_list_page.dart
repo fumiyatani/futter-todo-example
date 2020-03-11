@@ -22,7 +22,7 @@ class _TodoListPageState extends State<TodoListPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: TextField(
-                  onChanged: (text) {
+                  onChanged: (String text) {
                     _inputText = text;
                   },
                 ),
@@ -30,9 +30,7 @@ class _TodoListPageState extends State<TodoListPage> {
               Center(
                 child: RaisedButton(
                   child: const Text('登録'),
-                  onPressed: () {
-                    register(_inputText);
-                  },
+                  onPressed: () => register(_inputText),
                 ),
               )
             ],
@@ -73,7 +71,7 @@ class _TodoListPageState extends State<TodoListPage> {
         });
   }
 
-  FutureBuilder _createFutureBuilder() {
+  FutureBuilder<List<Task>> _createFutureBuilder() {
     return FutureBuilder<List<Task>>(
       future: databaseHelper.queryAllTasks(),
       builder: (context, snapshot) {
@@ -99,11 +97,7 @@ class _TodoListPageState extends State<TodoListPage> {
                   ),
                 ),
                 child: ListTile(
-                  onTap: () {
-                    _showUpdateModal(
-                      task: task,
-                    );
-                  },
+                  onTap: () => _showUpdateModal(task: task),
                   leading: Checkbox(
                     value: false,
                     onChanged: (isChecked) {

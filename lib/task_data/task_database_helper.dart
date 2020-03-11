@@ -8,15 +8,15 @@ class TaskDatabaseHelper {
   static const String _databaseName = "TaskDatabase.db";
 
   // データベースバージョン
-  static const _databaseVersion = 1;
+  static const int _databaseVersion = 1;
 
   // テーブル名
   static const String _table = 'task_table';
 
   // テーブル要素
-  static const _columnId = 'id';
-  static const _columnText = 'text';
-  static const _columnFinishedFlag = 'isFinished';
+  static const String _columnId = 'id';
+  static const String _columnText = 'text';
+  static const String _columnFinishedFlag = 'isFinished';
 
   // シングルトン化する
   TaskDatabaseHelper._privateConstructor();
@@ -44,7 +44,7 @@ class TaskDatabaseHelper {
   }
 
   // テーブルを作成する。
-  Future _onCreate(Database db, int version) async {
+  Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
           CREATE TABLE $_table (
             $_columnId TEXT PRIMARY KEY,
@@ -76,7 +76,7 @@ class TaskDatabaseHelper {
     Database db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.query(_table);
 
-    return List.generate(maps.length, (index) {
+    return List.generate(maps.length, (int index) {
       String id = maps[index][_columnId].toString();
       String text = maps[index][_columnText].toString();
       bool isFinished = maps[index][_columnFinishedFlag] == 1;
