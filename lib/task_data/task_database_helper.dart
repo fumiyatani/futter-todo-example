@@ -98,4 +98,23 @@ class TaskDatabaseHelper {
       whereArgs: <String>[id],
     );
   }
+
+  // タスクテキストの更新処理
+  Future<int> updateTaskText(Task task, String updatedText) async {
+    Database db = await instance.database;
+
+    Task updatedTask = Task(
+      id: task.id,
+      text: updatedText,
+      isFinished: task.isFinished,
+    );
+
+    return await db.update(
+      _table,
+      updatedTask.toMap(),
+      where: "id = ?",
+      whereArgs: <String>[task.id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 }

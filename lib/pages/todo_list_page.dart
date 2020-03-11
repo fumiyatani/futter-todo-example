@@ -10,6 +10,7 @@ class TodoListPage extends StatefulWidget {
 class _TodoListPageState extends State<TodoListPage> {
   TaskDatabaseHelper databaseHelper = TaskDatabaseHelper.instance;
 
+  // 登録する際に表示するモーダル
   void _showModal() {
     String _inputText = '';
     showModalBottomSheet<void>(
@@ -31,6 +32,39 @@ class _TodoListPageState extends State<TodoListPage> {
                   child: const Text('登録'),
                   onPressed: () {
                     register(_inputText);
+                  },
+                ),
+              )
+            ],
+          );
+        });
+  }
+
+  // 更新する際に表示するモーダル
+  void _showUpdateModal({@required Task task}) {
+    String updatedText = task.text;
+    showModalBottomSheet<void>(
+        context: context,
+        builder: (context) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: TextField(
+                  controller: TextEditingController(
+                    text: task.text, // Textの初期値を設定
+                  ),
+                  onChanged: (text) {
+                    updatedText = text;
+                  },
+                ),
+              ),
+              Center(
+                child: RaisedButton(
+                  child: const Text('更新'),
+                  onPressed: () {
+                    updateTask(task, updatedText);
                   },
                 ),
               )
@@ -65,6 +99,11 @@ class _TodoListPageState extends State<TodoListPage> {
                   ),
                 ),
                 child: ListTile(
+                  onTap: () {
+                    _showUpdateModal(
+                      task: task,
+                    );
+                  },
                   leading: Checkbox(
                     value: false,
                     onChanged: (isChecked) {
@@ -99,6 +138,18 @@ class _TodoListPageState extends State<TodoListPage> {
     databaseHelper.deleteSelectedTask(id).then((i) {
       _getTasks();
     });
+  }
+
+  void updateTask(Task task, String updatedText) {
+    // ここにDB処理を書く
+    if (updatedText == task.text || updatedText.isEmpty) {
+      // もし一致していた場合は何もしない。
+    } else {
+      databaseHelper.updateTaskText(task, updatedText).then((i) {
+        Navigator.pop(context, null);
+        _getTasks();
+      });
+    }
   }
 
   void _getTasks() {
