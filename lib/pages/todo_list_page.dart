@@ -162,7 +162,8 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
               ),
               onPressed: () {
                 print('タイトルが表示される');
-                _taskLocalNotificationManager.showNotification('TODOのタイトルが表示されるようにしたい');
+                _taskLocalNotificationManager
+                    .showNotification('TODOのタイトルが表示されるようにしたい');
               },
             ),
             _buildMenuButton(),
@@ -241,9 +242,7 @@ class _FutureBuilderTodoListViewState
         bool isFinished = task.isFinished;
         return Container(
           decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: Colors.black12),
-            ),
+            border: Border(bottom: BorderSide(color: Colors.black12)),
           ),
           child: ListTile(
               onTap: () {
@@ -263,9 +262,7 @@ class _FutureBuilderTodoListViewState
                   Icons.delete,
                   color: Colors.grey.shade500,
                 ),
-                onPressed: () {
-                  widget.onPressedDelete(task.id);
-                },
+                onPressed: () => widget.onPressedDelete(task.id),
               ),
               title: _buildText(task.text, isFinished)),
         );
@@ -275,12 +272,7 @@ class _FutureBuilderTodoListViewState
 
   Text _buildText(String text, bool isFinished) {
     return isFinished
-        ? Text(
-            text,
-            style: TextStyle(
-              decoration: TextDecoration.lineThrough,
-            ),
-          )
+        ? Text(text, style: TextStyle(decoration: TextDecoration.lineThrough))
         : Text(text);
   }
 
