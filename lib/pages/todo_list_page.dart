@@ -43,39 +43,9 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
     setState(() {});
   }
 
-  void _showModal() {
-    String inputText = '';
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: TextField(
-                onChanged: (String text) {
-                  inputText = text;
-                },
-              ),
-            ),
-            Center(
-              child: RaisedButton(
-                child: const Text('登録'),
-                onPressed: () {
-                  _todoListPresenter.registerTask(inputText);
-                  Navigator.of(context).pop(null);
-                },
-              ),
-            )
-          ],
-        );
-      },
-    );
-  }
-
-  void _showUpdateModal(Task task) {
-    String updatedText = task.text;
+  void _showModalWidget({@required String buttonText, Task task}) {
+    // taskがnullの場合は登録時に表示しているとみなすため、空の文字列を渡してあげる。
+    String editingText = task == null ? '' : task.text;
     showModalBottomSheet<void>(
       context: context,
       builder: (context) {
@@ -86,18 +56,22 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: TextField(
                 controller: TextEditingController(
-                  text: task.text, // Textの初期値を設定
+                  text: editingText, // Textの初期値を設定
                 ),
                 onChanged: (text) {
-                  updatedText = text;
+                  editingText = text;
                 },
               ),
             ),
             Center(
               child: RaisedButton(
-                  child: const Text('更新'),
+                  child: Text(buttonText),
                   onPressed: () {
-                    _todoListPresenter.updateTask(task, updatedText);
+                    if (task == null) {
+                      _todoListPresenter.registerTask(editingText);
+                    } else {
+                      _todoListPresenter.updateTask(task, editingText);
+                    }
                     Navigator.of(context).pop(null);
                   }),
             )
@@ -170,12 +144,12 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => _showModal(),
+          onPressed: () => _showModalWidget(buttonText: '登録', task: null),
           child: Icon(Icons.add),
         ),
         body: _FutureBuilderTodoListView(
           onPressedRow: (Task task) {
-            _showUpdateModal(task);
+            _showModalWidget(buttonText: '更新', task: task);
           },
           onChecked: (Task task, bool isFinished) {
             _todoListPresenter.updateFinishFlag(task, isFinished);

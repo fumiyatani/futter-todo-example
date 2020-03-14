@@ -27,6 +27,7 @@ dependencies:
   sqflite: ^1.2.2
   path: ^1.6.4
   flutter_local_notifications: ^1.2.1
+  flutter_cupertino_date_picker: ^1.0.12
 
 dev_dependencies:
   flutter_test:
