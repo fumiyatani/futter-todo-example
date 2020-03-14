@@ -209,7 +209,6 @@ class _FutureBuilderTodoListView extends StatefulWidget {
 class _FutureBuilderTodoListViewState
     extends State<_FutureBuilderTodoListView> {
   // タスクを完了したかどうかのフラグ。
-  bool isFinished = false;
 
   FutureBuilder<List<Task>> _createFutureBuilder(BuildContext context) {
     Future<List<Task>> tasks =
@@ -239,7 +238,7 @@ class _FutureBuilderTodoListViewState
       itemCount: data.length,
       itemBuilder: (context, index) {
         final task = data[index];
-        isFinished = task.isFinished;
+        bool isFinished = task.isFinished;
         return Container(
           decoration: BoxDecoration(
             border: Border(
