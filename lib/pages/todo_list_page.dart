@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/notification/task_local_notificaiton.dart';
 import 'package:todoapp/pages/todo_list_page_presenter.dart';
 import 'package:todoapp/task_data/task.dart';
 import 'package:todoapp/task_data/task_database_helper.dart';
@@ -6,6 +7,9 @@ import 'package:todoapp/task_data/task_database_helper.dart';
 const String all = '全て';
 const String complete = '完了';
 const String incomplete = '未完';
+
+TaskLocalNotificationManager _taskLocalNotificationManager =
+    TaskLocalNotificationManager();
 
 class TodoListPage extends StatefulWidget {
   @override
@@ -21,6 +25,13 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
   @override
   void initState() {
     super.initState();
+
+    _taskLocalNotificationManager.initializeSettings(false);
+    _taskLocalNotificationManager.requestIOSPermission();
+    _taskLocalNotificationManager.configureSelectNotificationSubject((payload) {
+      debugPrint(payload);
+    });
+
     _todoListPresenter = TodoListPresenter(
       taskDatabaseHelper: TaskDatabaseHelper.instance,
       onComplete: this,
@@ -145,6 +156,15 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
         appBar: AppBar(
           title: const Text('TODO アプリ'),
           actions: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.notifications,
+              ),
+              onPressed: () {
+                print('タイトルが表示される');
+                _taskLocalNotificationManager.showNotification('TODOのタイトルが表示されるようにしたい');
+              },
+            ),
             _buildMenuButton(),
           ],
         ),
