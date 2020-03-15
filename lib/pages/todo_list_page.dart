@@ -48,6 +48,7 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
     // taskがnullの場合は登録時に表示しているとみなすため、空の文字列を渡してあげる。
     ValueNotifier<DateTime> selectedDateTime = ValueNotifier(null);
     String editingText = task == null ? '' : task.text;
+    TextEditingController textEditingController = TextEditingController(text: editingText);
 
     showModalBottomSheet<void>(
       context: context,
@@ -59,11 +60,10 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: TextField(
-                controller: TextEditingController(
-                  text: editingText, // Textの初期値を設定
-                ),
+                controller: textEditingController,
                 onChanged: (text) {
                   editingText = text;
+                  textEditingController.selection = TextSelection.collapsed(offset: editingText.length);
                 },
               ),
             ),
