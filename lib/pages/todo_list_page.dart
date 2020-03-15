@@ -23,6 +23,9 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
   // どのリストを表示するかを決める。初回は全てから。
   ListType listType = ListType.all;
 
+  TextEditingController _textEditingController;
+  ValueNotifier<DateTime> _selectedDateTimeValueNotifier;
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +35,11 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
     _taskLocalNotificationManager.configureSelectNotificationSubject((payload) {
       debugPrint(payload);
     });
+
+    // buildメソッド内で初期化を行うとカーソルの位置まで初期化されてしまうため、インスタンス化はinitStateで行う。
+    _textEditingController = TextEditingController(text: '');
+
+    _selectedDateTimeValueNotifier = ValueNotifier(null);
 
     _todoListPresenter = TodoListPresenter(
       taskDatabaseHelper: TaskDatabaseHelper.instance,
@@ -46,9 +54,8 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
 
   void _showModalWidget({@required String buttonText, Task task}) {
     // taskがnullの場合は登録時に表示しているとみなすため、空の文字列を渡してあげる。
-    ValueNotifier<DateTime> selectedDateTime = ValueNotifier(null);
     String editingText = task == null ? '' : task.text;
-    TextEditingController textEditingController = TextEditingController(text: editingText);
+    _textEditingController.value = TextEditingValue(text: editingText);
 
     showModalBottomSheet<void>(
       context: context,
@@ -60,15 +67,14 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: TextField(
-                controller: textEditingController,
+                controller: _textEditingController,
                 onChanged: (text) {
                   editingText = text;
-                  textEditingController.selection = TextSelection.collapsed(offset: editingText.length);
                 },
               ),
             ),
             ValueListenableBuilder<DateTime>(
-              valueListenable: selectedDateTime,
+              valueListenable: _selectedDateTimeValueNotifier,
               builder: (BuildContext context, selectedDateTime, Widget child) {
                 selectedDateTime = selectedDateTime;
                 final String formattedDateTime = selectedDateTime == null
@@ -97,7 +103,7 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
                 child: const Text('期日を選択'),
                 onPressed: () {
                   _showCalendar(context, (dateTime) {
-                    selectedDateTime.value = dateTime;
+                    _selectedDateTimeValueNotifier.value = dateTime;
                   });
                 },
               ),
@@ -106,9 +112,9 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
               child: RaisedButton(
                   child: Text(buttonText),
                   onPressed: () {
-                    if (selectedDateTime != null) {
+                    if (_selectedDateTimeValueNotifier.value != null) {
                       _taskLocalNotificationManager.scheduleNotification(
-                          editingText, selectedDateTime.value);
+                          editingText, _selectedDateTimeValueNotifier.value);
                     }
                     if (task == null) {
                       _todoListPresenter.registerTask(editingText);
@@ -180,6 +186,8 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
   @override
   void dispose() {
     _taskLocalNotificationManager.closeNotificationStream();
+    _textEditingController.dispose();
+    _selectedDateTimeValueNotifier.dispose();
     super.dispose();
   }
   @override
