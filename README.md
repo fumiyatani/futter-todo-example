@@ -10,19 +10,27 @@ Flutterの勉強のためにTODOアプリを作成しました。
 
 - TODOの削除
 
-- TODOのソート (全て、完了、未完から選択可能)
+- TODOのソート(全て、完了、未完から選択可能)
+
+- 期限付きTODOを作成(アプリをフォアグラウンドにした場合に通知)
 
 ## 使用しているpackage
 
-- [uuid](https://pub.dev/packages/uuid#-readme-tab-)
+- [uuid](https://pub.dev/packages/uuid)
 一意のIDを作成するために使用。
 
-- [spflite](https://pub.dev/packages/sqflite#-readme-tab-)
+- [spflite](https://pub.dev/packages/sqflite)
 データを永続化するために使用。
 
-- [path](https://pub.dev/packages/path#-readme-tab-)
+- [path](https://pub.dev/packages/path)
 ローカルDBのパス操作を行うために使用。
 
-## 追加する機能
+- [flutter_local_notifications](https://pub.dev/packages/path)
+ローカル通知を行得るようにするために使用。
 
-- 期限つきTODOを作成できるようにする。
+- [intl](https://pub.dev/packages/intl)
+DateTimeを文字列で表示する際のフォーマット指定のために使用。
+
+## 今後追加する予定の機能
+
+- 期限付きTODOのバックグラウンド通知
