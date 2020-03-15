@@ -78,8 +78,13 @@ class TaskLocalNotificationManager {
     String payload = '',
   }) async {
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-        'your channel id', 'your channel name', 'your channel description',
-        importance: Importance.Max, priority: Priority.High, ticker: 'ticker');
+      'your channel id',
+      'your channel name',
+      'your channel description',
+      importance: Importance.Max,
+      priority: Priority.High,
+      ticker: 'ticker',
+    );
 
     var iOSPlatformChannelSpecifics = IOSNotificationDetails();
 
@@ -100,33 +105,30 @@ class TaskLocalNotificationManager {
     DateTime notifyingDateTime, {
     String payload = '',
   }) async {
-    var scheduledNotificationDateTime =
-        DateTime.now().add(const Duration(seconds: 5));
-
     AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails('your other channel id',
-            'your other channel name', 'your other channel description',
-            icon: 'secondary_icon',
-            sound: 'slow_spring_board',
-            largeIcon: 'sample_large_icon',
-            largeIconBitmapSource: BitmapSource.Drawable,
-            enableLights: true,
-            color: const Color.fromARGB(255, 255, 0, 0),
-            ledColor: const Color.fromARGB(255, 255, 0, 0),
-            ledOnMs: 1000,
-            ledOffMs: 500);
+        AndroidNotificationDetails(
+      'your channel id',
+      'your channel name',
+      'your channel description',
+      importance: Importance.Max,
+      priority: Priority.High,
+      ticker: 'ticker',
+    );
 
-    IOSNotificationDetails iOSPlatformChannelSpecifics =
-        IOSNotificationDetails(sound: 'slow_spring_board.aiff');
+    IOSNotificationDetails iOSPlatformChannelSpecifics = IOSNotificationDetails(
+      sound: 'slow_spring_board.aiff',
+    );
 
     NotificationDetails platformChannelSpecifics = NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+      androidPlatformChannelSpecifics,
+      iOSPlatformChannelSpecifics,
+    );
 
     await flutterLocalNotificationsPlugin.schedule(
       0,
       title,
       body,
-      scheduledNotificationDateTime,
+      notifyingDateTime,
       platformChannelSpecifics,
       payload: payload,
     );

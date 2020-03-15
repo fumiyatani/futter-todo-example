@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:todoapp/notification/task_local_notificaiton.dart';
 import 'package:todoapp/pages/todo_list_page_presenter.dart';
 import 'package:todoapp/task_data/task.dart';
@@ -70,31 +71,44 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
               valueListenable: selectedDateTime,
               builder: (BuildContext context, selectedDateTime, Widget child) {
                 selectedDateTime = selectedDateTime;
+                final String formattedDateTime = selectedDateTime == null
+                    ? ''
+                    : DateFormat('yy/MM/dd').format(selectedDateTime);
                 return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 24.0),
+                  padding: const EdgeInsets.only(
+                    left: 24.0,
+                    top: 16.0,
+                    right: 24.0,
+                  ),
                   child: Text(
-                    '期日 : $selectedDateTime',
+                    '期日 : $formattedDateTime',
                     textAlign: TextAlign.start,
                     style: const TextStyle(fontSize: 16.0),
                   ),
                 );
               },
             ),
-            OutlineButton(
-              child: const Text('期日を選択'),
-              onPressed: () {
-                _showCalendar(context, (dateTime) {
-                  selectedDateTime.value = dateTime;
-                });
-              },
+            Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: 16.0,
+                horizontal: 24.0,
+              ),
+              child: OutlineButton(
+                child: const Text('期日を選択'),
+                onPressed: () {
+                  _showCalendar(context, (dateTime) {
+                    selectedDateTime.value = dateTime;
+                  });
+                },
+              ),
             ),
             Center(
               child: RaisedButton(
                   child: Text(buttonText),
                   onPressed: () {
                     if (selectedDateTime != null) {
-                      _taskLocalNotificationManager.scheduleNotification(editingText, selectedDateTime.value);
+                      _taskLocalNotificationManager.scheduleNotification(
+                          editingText, selectedDateTime.value);
                     }
                     if (task == null) {
                       _todoListPresenter.registerTask(editingText);
@@ -110,7 +124,8 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
     );
   }
 
-  void _showCalendar(BuildContext context, Function(DateTime) onSelectedDateTime) {
+  void _showCalendar(
+      BuildContext context, Function(DateTime) onSelectedDateTime) {
     showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -170,16 +185,6 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
         appBar: AppBar(
           title: const Text('TODO アプリ'),
           actions: <Widget>[
-            IconButton(
-              icon: Icon(
-                Icons.notifications,
-              ),
-              onPressed: () {
-                print('タイトルが表示される');
-                _taskLocalNotificationManager
-                    .showNotification('TODOのタイトルが表示されるようにしたい');
-              },
-            ),
             _buildMenuButton(),
           ],
         ),
