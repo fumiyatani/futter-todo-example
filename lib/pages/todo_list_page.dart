@@ -178,6 +178,11 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
   }
 
   @override
+  void dispose() {
+    _taskLocalNotificationManager.closeNotificationStream();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
     return _TodoListInheritedWidget(
       tasks: _todoListPresenter.queryTasks(listType),
