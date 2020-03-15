@@ -228,8 +228,6 @@ class _FutureBuilderTodoListView extends StatefulWidget {
 // Databaseから取得したデータを表示するためのFutureBuilderで包まれたListView
 class _FutureBuilderTodoListViewState
     extends State<_FutureBuilderTodoListView> {
-  // タスクを完了したかどうかのフラグ。
-
   FutureBuilder<List<Task>> _createFutureBuilder(BuildContext context) {
     Future<List<Task>> tasks =
         _TodoListInheritedWidget.of(context, listen: true).tasks;
