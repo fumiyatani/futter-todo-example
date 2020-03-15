@@ -12,6 +12,9 @@ class TodoListPresenter {
   }
 
   void registerTask(String taskText) {
+    if (taskText == null) {
+      return;
+    }
     _taskDatabaseHelper.registerTask(taskText).then((int index) {
       _onComplete.onComplete();
     });
@@ -24,6 +27,9 @@ class TodoListPresenter {
   }
 
   void updateTask(Task task, String updatedText) {
+    if (updatedText == null || task.text == updatedText) {
+      return;
+    }
     _taskDatabaseHelper.updateTaskText(task, updatedText).then((int index) {
       _onComplete.onComplete();
     });

@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class TaskLocalNotificationManager {
+  static final String body = 'TODOの期日です。';
+
   final StreamController<String> selectNotificationSubject =
       StreamController<String>();
   NotificationAppLaunchDetails notificationAppLaunchDetails;
@@ -87,16 +89,20 @@ class TaskLocalNotificationManager {
     await flutterLocalNotificationsPlugin.show(
       0,
       title,
-      'TODOの期日です。',
+      body,
       platformChannelSpecifics,
       payload: payload,
     );
   }
 
-  Future<void> _scheduleNotification(
-    String title, {
+  Future<void> scheduleNotification(
+    String title,
+    DateTime notifyingDateTime, {
     String payload = '',
   }) async {
+    print('title : $title');
+    print('notifyingDateTime : $notifyingDateTime');
+
     var scheduledNotificationDateTime =
         DateTime.now().add(const Duration(seconds: 5));
 
@@ -121,8 +127,8 @@ class TaskLocalNotificationManager {
 
     await flutterLocalNotificationsPlugin.schedule(
       0,
-      'scheduled title',
-      'scheduled body',
+      title,
+      body,
       scheduledNotificationDateTime,
       platformChannelSpecifics,
       payload: payload,
