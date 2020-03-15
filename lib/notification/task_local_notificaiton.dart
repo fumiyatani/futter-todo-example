@@ -100,9 +100,6 @@ class TaskLocalNotificationManager {
     DateTime notifyingDateTime, {
     String payload = '',
   }) async {
-    print('title : $title');
-    print('notifyingDateTime : $notifyingDateTime');
-
     var scheduledNotificationDateTime =
         DateTime.now().add(const Duration(seconds: 5));
 

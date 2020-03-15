@@ -45,12 +45,15 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
 
   void _showModalWidget({@required String buttonText, Task task}) {
     // taskがnullの場合は登録時に表示しているとみなすため、空の文字列を渡してあげる。
+    ValueNotifier<DateTime> selectedDateTime = ValueNotifier(null);
     String editingText = task == null ? '' : task.text;
+
     showModalBottomSheet<void>(
       context: context,
       builder: (context) {
         return Column(
           mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -63,10 +66,36 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
                 },
               ),
             ),
+            ValueListenableBuilder<DateTime>(
+              valueListenable: selectedDateTime,
+              builder: (BuildContext context, selectedDateTime, Widget child) {
+                selectedDateTime = selectedDateTime;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 24.0),
+                  child: Text(
+                    '期日 : $selectedDateTime',
+                    textAlign: TextAlign.start,
+                    style: const TextStyle(fontSize: 16.0),
+                  ),
+                );
+              },
+            ),
+            OutlineButton(
+              child: const Text('期日を選択'),
+              onPressed: () {
+                _showCalendar(context, (dateTime) {
+                  selectedDateTime.value = dateTime;
+                });
+              },
+            ),
             Center(
               child: RaisedButton(
                   child: Text(buttonText),
                   onPressed: () {
+                    if (selectedDateTime != null) {
+                      _taskLocalNotificationManager.scheduleNotification(editingText, selectedDateTime.value);
+                    }
                     if (task == null) {
                       _todoListPresenter.registerTask(editingText);
                     } else {
@@ -79,6 +108,17 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
         );
       },
     );
+  }
+
+  void _showCalendar(BuildContext context, Function(DateTime) onSelectedDateTime) {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(DateTime.now().year - 1),
+      lastDate: DateTime(DateTime.now().year + 1),
+    ).then((dateTime) {
+      onSelectedDateTime(dateTime);
+    });
   }
 
   PopupMenuButton _buildMenuButton() {
