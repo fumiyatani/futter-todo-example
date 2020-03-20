@@ -190,6 +190,7 @@ class _TodoListPageState extends State<TodoListPage> implements TaskCallback {
     _selectedDateTimeValueNotifier.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     return _TodoListInheritedWidget(
@@ -241,25 +242,20 @@ class _FutureBuilderTodoListView extends StatefulWidget {
 // Databaseから取得したデータを表示するためのFutureBuilderで包まれたListView
 class _FutureBuilderTodoListViewState
     extends State<_FutureBuilderTodoListView> {
-  FutureBuilder<List<Task>> _createFutureBuilder(BuildContext context) {
+  FutureBuilder<List<Task>> _buildFutureBuilder(BuildContext context) {
     Future<List<Task>> tasks =
         _TodoListInheritedWidget.of(context, listen: true).tasks;
+
     return FutureBuilder<List<Task>>(
       future: tasks,
       builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+        if (!snapshot.hasData || snapshot.data == null) {
           // snapshot がデータを持っていない場合
           return const Center(
             child: CircularProgressIndicator(),
           );
-        } else if (snapshot.data == null) {
-          // snapshot がジェネリクスで指定したデータを持っていない場合
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        } else {
-          return _buildListView(snapshot.data);
         }
+        return _buildListView(snapshot.data);
       },
     );
   }
@@ -269,34 +265,41 @@ class _FutureBuilderTodoListViewState
       itemCount: data.length,
       itemBuilder: (context, index) {
         final task = data[index];
-        bool isFinished = task.isFinished;
         return Container(
           decoration: BoxDecoration(
             border: Border(bottom: BorderSide(color: Colors.black12)),
           ),
-          child: ListTile(
-              onTap: () {
-                widget.onPressedRow(task);
-              },
-              leading: Checkbox(
-                value: isFinished,
-                onChanged: (isChecked) {
-                  widget.onChecked(task, isChecked);
-                  setState(() {
-                    isFinished = isChecked;
-                  });
-                },
-              ),
-              trailing: IconButton(
-                icon: Icon(
-                  Icons.delete,
-                  color: Colors.grey.shade500,
-                ),
-                onPressed: () => widget.onPressedDelete(task.id),
-              ),
-              title: _buildText(task.text, isFinished)),
+          child: _buildListTile(task),
         );
       },
+    );
+  }
+
+  ListTile _buildListTile(Task task) {
+    bool isFinished = task.isFinished;
+    return ListTile(
+      onTap: () {
+        widget.onPressedRow(task);
+      },
+      leading: Checkbox(
+        value: isFinished,
+        onChanged: (isChecked) {
+          widget.onChecked(task, isChecked);
+          setState(
+            () {
+              isFinished = isChecked;
+            },
+          );
+        },
+      ),
+      trailing: IconButton(
+        icon: Icon(
+          Icons.delete,
+          color: Colors.grey.shade500,
+        ),
+        onPressed: () => widget.onPressedDelete(task.id),
+      ),
+      title: _buildText(task.text, isFinished),
     );
   }
 
@@ -308,7 +311,7 @@ class _FutureBuilderTodoListViewState
 
   @override
   Widget build(BuildContext context) {
-    return _createFutureBuilder(context);
+    return _buildFutureBuilder(context);
   }
 }
 
